@@ -37,8 +37,6 @@ import com.google.firebase.storage.UploadTask;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -51,7 +49,7 @@ import static android.app.Activity.RESULT_OK;
  * {@link ChatRoomListener} interface
  * to handle interaction events.
  */
-public class ChatRoomFragment extends Fragment {
+public class ChatRoomFragment extends Fragment implements MessageAdapter.MessageAdapterListener {
 
     private static final String TAG = "ChatRoomTag";
     private ChatRoomListener mListener;
@@ -102,7 +100,7 @@ public class ChatRoomFragment extends Fragment {
                     Message m = child.getValue(Message.class);
                     messageArrayList.add(m);
                 }
-                mAdapter = new MessageAdapter(messageArrayList,user);
+                mAdapter = new MessageAdapter(messageArrayList,user,ChatRoomFragment.this);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -151,6 +149,7 @@ public class ChatRoomFragment extends Fragment {
                     message.setUserId(user.getUid());
                     if (id==null){
                         id = myRef.push().getKey();
+                        message.setId(id);
                         addMessage(id);
                     }else{
                         addMessage(id);
@@ -165,7 +164,9 @@ public class ChatRoomFragment extends Fragment {
 
     private void addMessage(String id) {
         myRef.child(id).setValue(message);
-        message.setMessage("");
+        message = new Message();
+        messageText.setText("");
+        this.id=null;
     }
 
     private void startGallery() {
@@ -225,6 +226,11 @@ public class ChatRoomFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void delete(Message message) {
+        myRef.child(message.getId()).setValue(null);
     }
 
     /**

@@ -22,22 +22,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     private List<Message> messageList;
     private User user;
-    public MessageAdapter(List<Message> messageList, User user) {
+    private MessageAdapterListener messageAdapterListener;
+    public MessageAdapter(List<Message> messageList, User user, MessageAdapterListener messageAdapterListener) {
         this.messageList = messageList;
         this.user = user;
+        this.messageAdapterListener = messageAdapterListener;
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.message_row_layout, parent, false);
-
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_row_layout, parent, false);
         return new MyViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        Message message = messageList.get(position);
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
+        final Message message = messageList.get(position);
         holder.message.setText(message.getMessage());
         holder.displayName.setText(message.getUserName());
         holder.time.setText(messageTime(message.getTime()));
@@ -51,6 +51,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         if (!user.getUid().equalsIgnoreCase(message.getUserId())){
             holder.delete.setVisibility(View.INVISIBLE);
         }
+
+        holder.delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                messageAdapterListener.delete(message);
+            }
+        });
     }
 
     @Override
@@ -86,5 +93,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             e.printStackTrace();
         }
         return prettyTime.format(convertedDate);
+    }
+
+    interface MessageAdapterListener{
+        void delete(Message message);
     }
 }
