@@ -46,7 +46,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             constraintSet.clone(holder.constraintLayout);
             constraintSet.connect(R.id.textViewName,ConstraintSet.TOP,R.id.textViewMessageDisplay,ConstraintSet.BOTTOM,8);
             constraintSet.applyTo(holder.constraintLayout);
-            holder.imageView.setVisibility(View.INVISIBLE);
+            holder.constraintLayout.removeView(holder.imageView);
+            //holder.imageView.setVisibility(View.INVISIBLE);
         }
         if (!user.getUid().equalsIgnoreCase(message.getUserId())){
             holder.delete.setVisibility(View.INVISIBLE);
