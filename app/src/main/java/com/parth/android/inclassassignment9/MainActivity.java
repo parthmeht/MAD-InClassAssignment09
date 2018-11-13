@@ -1,5 +1,7 @@
 package com.parth.android.inclassassignment9;
 
+
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,21 +14,34 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+
 
 public class MainActivity extends AppCompatActivity
         implements LoginFragment.LoginFragmentListener,
         SignUpFragment.SignUpListener, ChatRoomFragment.ChatRoomListener {
 
-    private FirebaseAuth mAuth;
+    public static FirebaseAuth mAuth;
+
+    public static StorageReference mStorageRef;
     private String TAG = "MainActivityTag";
     private User user;
     public static String USER = "user";
+    public static String MESSAGE = "message";
+    public static int PICK_IMAGE_REQUEST = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+
     }
 
     @Override
@@ -167,4 +182,6 @@ public class MainActivity extends AppCompatActivity
                 .addToBackStack(null)
                 .commit();
     }
+
+
 }
