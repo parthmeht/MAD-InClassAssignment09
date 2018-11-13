@@ -24,9 +24,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-
-
-
     }
 
     @Override
@@ -40,6 +37,7 @@ public class MainActivity extends AppCompatActivity
     private void updateUI(FirebaseUser currentUser, String flag) {
         if (currentUser!=null){
             Log.d(TAG, "Logged In Successfully");
+            setTitle("Chat Room");
             if (flag.equalsIgnoreCase("start")){
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.container, new ChatRoomFragment(), "ChatRoomFragment")
@@ -51,6 +49,7 @@ public class MainActivity extends AppCompatActivity
                         .commit();
             }
         }else {
+            setTitle("Login");
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new LoginFragment(), "LoginFragment")
                     .commit();
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void goToSignUp() {
-        setTitle("Select Avatar");
+        setTitle("Sign Up");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new SignUpFragment(), "SignUpFragment")
                 .addToBackStack(null)
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void login(String email, String password) {
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void goToLogin() {
-        setTitle("Select Avatar");
+        setTitle("Login");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new LoginFragment(), "LoginFragment")
                 .addToBackStack(null)
@@ -142,5 +142,14 @@ public class MainActivity extends AppCompatActivity
         } else {
             return true;
         }
+    }
+
+    @Override
+    public void signOut() {
+        mAuth.signOut();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, new LoginFragment(), "LoginFragment")
+                .addToBackStack(null)
+                .commit();
     }
 }

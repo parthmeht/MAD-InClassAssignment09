@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 
 /**
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 public class ChatRoomFragment extends Fragment {
 
     private ChatRoomListener mListener;
+    private ImageButton signOut;
 
     public ChatRoomFragment() {
         // Required empty public constructor
@@ -29,6 +31,13 @@ public class ChatRoomFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_chat_room, container, false);
+        signOut = view.findViewById(R.id.signOutButton);
+        signOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.signOut();
+            }
+        });
         return view;
     }
 
@@ -59,6 +68,6 @@ public class ChatRoomFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface ChatRoomListener {
-        // TODO: Update argument type and name
+        void signOut();
     }
 }
