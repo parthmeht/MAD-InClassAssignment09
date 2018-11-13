@@ -11,6 +11,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class MainActivity extends AppCompatActivity
         implements LoginFragment.LoginFragmentListener,
@@ -18,6 +19,8 @@ public class MainActivity extends AppCompatActivity
 
     private FirebaseAuth mAuth;
     private String TAG = "MainActivityTag";
+    private User user;
+    public static String USER = "user";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +41,18 @@ public class MainActivity extends AppCompatActivity
         if (currentUser!=null){
             Log.d(TAG, "Logged In Successfully");
             setTitle("Chat Room");
+            user = new User(currentUser);
+            ChatRoomFragment chatRoomFragment = new ChatRoomFragment();
+            Bundle args = new Bundle();
+            args.putSerializable(USER, user);
+            chatRoomFragment.setArguments(args);
             if (flag.equalsIgnoreCase("start")){
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new ChatRoomFragment(), "ChatRoomFragment")
+                        .add(R.id.container, chatRoomFragment, "ChatRoomFragment")
                         .commit();
             }else{
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, new ChatRoomFragment(), "ChatRoomFragment")
-                        .addToBackStack(null)
+                        .replace(R.id.container, chatRoomFragment, "ChatRoomFragment")
                         .commit();
             }
         }else {
@@ -97,7 +104,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void signUp(User user) {
+    public void signUp(final User user) {
         mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -105,8 +112,17 @@ public class MainActivity extends AppCompatActivity
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user, "login");
+                            final FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(user.getFirstName() +" "+ user.getLastName()).build();
+                            firebaseUser.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    Log.d(TAG, "User profile updated.");
+                                    Toast.makeText(MainActivity.this, "User is created !!!", Toast.LENGTH_LONG).show();
+                                    updateUI(firebaseUser, "login");
+                                }
+                            });
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());

@@ -7,7 +7,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 
 /**
@@ -19,7 +21,9 @@ import android.widget.ImageButton;
 public class ChatRoomFragment extends Fragment {
 
     private ChatRoomListener mListener;
-    private ImageButton signOut;
+    private ImageButton signOut,addImage,sendMessage;
+    private TextView displayName;
+    private User user;
 
     public ChatRoomFragment() {
         // Required empty public constructor
@@ -32,6 +36,14 @@ public class ChatRoomFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_chat_room, container, false);
         signOut = view.findViewById(R.id.signOutButton);
+        displayName = view.findViewById(R.id.textViewDisplayName);
+        addImage = view.findViewById(R.id.addImageButton);
+        sendMessage = view.findViewById(R.id.sendButton);
+        if (getArguments()!=null){
+            user = (User) getArguments().getSerializable(MainActivity.USER);
+            displayName.setText(user.getDisplayName());
+        }
+
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
