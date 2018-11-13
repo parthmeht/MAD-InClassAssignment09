@@ -12,12 +12,12 @@ import android.view.ViewGroup;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link LoginFragment.OnFragmentInteractionListener} interface
+ * {@link LoginFragmentListener} interface
  * to handle interaction events.
  */
 public class LoginFragment extends Fragment {
 
-    private OnFragmentInteractionListener mListener;
+    private LoginFragmentListener mListener;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -31,21 +31,14 @@ public class LoginFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+        try {
+            mListener = (LoginFragmentListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + "must implement MyProfileFragmentListener interface");
         }
     }
 
@@ -65,8 +58,7 @@ public class LoginFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface LoginFragmentListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }
