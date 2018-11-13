@@ -3,13 +3,14 @@ package com.parth.android.inclassassignment9;
 import java.io.Serializable;
 
 public class User implements Serializable {
-    private String id, firstName, lastName, email;
+    private String id, firstName, lastName, email, password;
 
-    public User(String id, String firstName, String lastName, String email) {
+    public User(String firstName, String lastName, String email, String password) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.password = password;
     }
 
     public User(){
@@ -48,6 +49,14 @@ public class User implements Serializable {
         this.email = email;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -55,6 +64,7 @@ public class User implements Serializable {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 '}';
     }
 }
