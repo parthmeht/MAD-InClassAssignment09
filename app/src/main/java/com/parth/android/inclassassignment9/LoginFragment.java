@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 
 /**
@@ -20,6 +22,7 @@ public class LoginFragment extends Fragment {
 
     private LoginFragmentListener mListener;
     private Button loginBtn, signUpBtn;
+    private EditText email, password;
     private String TAG = "LoginTag";
 
     public LoginFragment() {
@@ -34,11 +37,19 @@ public class LoginFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         loginBtn = view.findViewById(R.id.btnLogin);
         signUpBtn = view.findViewById(R.id.btnSignUp);
-
+        email = view.findViewById(R.id.editTextLoginEmail);
+        password = view.findViewById(R.id.editTextLoginPassword);
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"Login Button Clicked");
+                if (!MainActivity.validateEmail(email.getText().toString())) {
+                    Toast.makeText(v.getContext(), "Blank/Invalid Email Id!", Toast.LENGTH_SHORT).show();
+                } else if (!MainActivity.validatePassword(password.getText().toString())) {
+                    Toast.makeText(v.getContext(), "Blank/Invalid Password!", Toast.LENGTH_SHORT).show();
+                } else {
+                    mListener.login(email.getText().toString(),password.getText().toString());
+                }
             }
         });
 
@@ -80,5 +91,6 @@ public class LoginFragment extends Fragment {
      */
     public interface LoginFragmentListener {
         void goToSignUp();
+        void login(String email, String password);
     }
 }

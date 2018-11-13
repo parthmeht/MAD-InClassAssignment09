@@ -83,5 +83,6 @@ public class SignUpFragment extends Fragment {
     public interface SignUpListener {
         // TODO: Update argument type and name
         void goToLogin();
+        void signUp(User user, String password);
     }
 }
