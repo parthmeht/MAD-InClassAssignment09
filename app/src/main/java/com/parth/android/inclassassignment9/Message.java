@@ -10,10 +10,12 @@ public class Message implements Serializable {
     private String time;
     private String userName;
 
-    public Message(String id, String message, String uri) {
+    public Message(String id, String userId, String message, String time, String userName) {
         this.id = id;
+        this.userId = userId;
         this.message = message;
-        this.uri = uri;
+        this.time = time;
+        this.userName = userName;
     }
 
     public Message(){

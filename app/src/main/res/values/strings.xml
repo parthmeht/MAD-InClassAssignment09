@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">InClassAssignment9</string>
+    <string name="app_name">Chat Room</string>
 
     <string name="login">Login</string>
     <string name="email">Email</string>

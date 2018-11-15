@@ -5,8 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -34,11 +33,13 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -57,19 +58,41 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
     private TextView displayName;
     private User user;
     private EditText messageText;
-    private Message message;
-    private Uri uri;
-    private String id;
+    public Message message;
+    public Uri uri;
     public static FirebaseDatabase database;
     public static DatabaseReference myRef;
     private ArrayList<Message> messageArrayList;
     private RecyclerView recyclerView;
     private MessageAdapter mAdapter;
+    private byte[] byteArray;
 
     public ChatRoomFragment() {
         // Required empty public constructor
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == MainActivity.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            this.uri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                addImage.setImageBitmap(bitmap);
+                addImage.setDrawingCacheEnabled(true);
+                addImage.buildDrawingCache();
+                bitmap = addImage.getDrawingCache();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                addImage.setDrawingCacheEnabled(false);
+                //uploadImage(uri);
+                byteArray = byteArrayOutputStream.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -84,7 +107,8 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
         sendMessage = view.findViewById(R.id.sendButton);
         messageText = view.findViewById(R.id.editTextMessage);
         recyclerView = view.findViewById(R.id.recyclerView);
-        message = new Message();
+        Bitmap icon = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.addimage);
+        addImage.setImageBitmap(icon);
         if (getArguments()!=null){
             user = (User) getArguments().getSerializable(MainActivity.USER);
             displayName.setText(user.getDisplayName());
@@ -100,6 +124,7 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
                     Message m = child.getValue(Message.class);
                     messageArrayList.add(m);
                 }
+
                 mAdapter = new MessageAdapter(messageArrayList,user,ChatRoomFragment.this);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
                 recyclerView.setLayoutManager(mLayoutManager);
@@ -117,12 +142,16 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                addImage.setImageResource(0);
                 if(ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
                 {
                     requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 2000);
                 }
                 else {
-                    startGallery();
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), MainActivity.PICK_IMAGE_REQUEST);
                 }
             }
         });
@@ -140,20 +169,21 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
                 if (messageText.getText() == null || messageText.getText().toString().equalsIgnoreCase("")) {
                     messageText.setError("Enter Message");
                 }else {
+                    String id = myRef.push().getKey();
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
                     Date convertedDate = new Date();
                     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    message.setMessage(messageText.getText().toString());
-                    message.setUserName(user.getDisplayName());
-                    message.setTime(dateFormat.format(convertedDate));
-                    message.setUserId(user.getUid());
-                    if (id==null){
-                        id = myRef.push().getKey();
-                        message.setId(id);
-                        addMessage(id);
-                    }else{
-                        addMessage(id);
+                    message = new Message(id,user.getUid(),messageText.getText().toString(),dateFormat.format(convertedDate),user.getDisplayName());
+                    if (uri!=null){
+                        StorageReference riversRef = MainActivity.mStorageRef.child("images/"+id+".png");
+                        riversRef.putBytes(byteArray).addOnSuccessListener(getActivity(), new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                message.setUri(taskSnapshot.getUploadSessionUri().toString());
+                            }
+                        });
                     }
+                    addMessage(message);
                 }
             }
         });
@@ -162,55 +192,12 @@ public class ChatRoomFragment extends Fragment implements MessageAdapter.Message
 
 
 
-    private void addMessage(String id) {
-        myRef.child(id).setValue(message);
-        message = new Message();
+    private void addMessage(Message message) {
+        myRef.child(message.getId()).setValue(message);
         messageText.setText("");
-        this.id=null;
     }
 
-    private void startGallery() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), MainActivity.PICK_IMAGE_REQUEST);
-    }
 
-    public void uploadImage(Uri uri) {
-        Uri file = uri;
-        id = myRef.push().getKey();
-        StorageReference riversRef = MainActivity.mStorageRef.child("images/"+id+".jpg");
-        riversRef.putFile(file)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get a URL to the uploaded content
-                        message.setUri(taskSnapshot.getUploadSessionUri().toString());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.d(TAG, "Error");
-                    }
-                });
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MainActivity.PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            this.uri = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-                Drawable d = new BitmapDrawable(getResources(), bitmap);
-                addImage.setImageDrawable(d);
-                uploadImage(uri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     @Override
     public void onAttach(Context context) {

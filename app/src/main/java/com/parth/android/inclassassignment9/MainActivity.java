@@ -14,8 +14,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -32,7 +30,7 @@ public class MainActivity extends AppCompatActivity
     private User user;
     public static String USER = "user";
     public static String MESSAGE = "message";
-    public static int PICK_IMAGE_REQUEST = 1;
+    public static int PICK_IMAGE_REQUEST = 0;
 
 
     @Override
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity
             chatRoomFragment.setArguments(args);
             if (flag.equalsIgnoreCase("start")){
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, chatRoomFragment, "ChatRoomFragment")
+                        .add(R.id.container, chatRoomFragment, "ChatRoomFragment1")
                         .commit();
             }else{
                 getSupportFragmentManager().beginTransaction()
@@ -78,21 +76,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            getSupportFragmentManager().popBackStack();
-        } else {
-            super.onBackPressed();
-        }
-    }
 
     @Override
     public void goToSignUp() {
         setTitle("Sign Up");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new SignUpFragment(), "SignUpFragment")
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -154,7 +143,6 @@ public class MainActivity extends AppCompatActivity
         setTitle("Login");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new LoginFragment(), "LoginFragment")
-                .addToBackStack(null)
                 .commit();
     }
 
@@ -179,7 +167,6 @@ public class MainActivity extends AppCompatActivity
         mAuth.signOut();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new LoginFragment(), "LoginFragment")
-                .addToBackStack(null)
                 .commit();
     }
 
